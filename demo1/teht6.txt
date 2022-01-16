@@ -1,0 +1,26 @@
+
+Eemil Kauppinen
+
+binääri   dec   char
+====================
+01010100 = 84 => T
+01010101 = 85 => U
+01010100 = 84 => T
+01001011 = 75 => K
+01001001 = 73 => I
+01000101 = 69 => E
+01001100 = 76 => L
+01001101 = 77 => M
+01010011 = 83 => S
+
+Mikä teksti tuohon kohtaan USB-tikun muistia on tallentunut?
+
+- TUTKIELMS
+
+Montako millimetriä Simo on painanut ohi yhdestä näppäimestä? Hänellä on samanlainen näppäimistö kuin sinulla.
+	
+- Simo on painanut noin 10mm oikealle.
+	
+Mikä binääriluku pitäisi olla viallisen kirjaimen kohdalla?
+
+- 01000001
