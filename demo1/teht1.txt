@@ -1,0 +1,35 @@
+kurssit:
+total 4
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:45 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:44 ../
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ohj1/
+
+kurssit/ohj1:
+total 0
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:45 ../
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 demot/
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ht/
+
+kurssit/ohj1/demot:
+total 0
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ../
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:49 demo1/
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 demo2/
+
+kurssit/ohj1/demot/demo1:
+total 0
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:49 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 ../
+-rw-r--r-- 1 Omistaja 197121 0 Jan 16 19:49 teht1.txt
+
+kurssit/ohj1/demot/demo2:
+total 0
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:47 ../
+
+kurssit/ohj1/ht:
+total 0
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ./
+drwxr-xr-x 1 Omistaja 197121 0 Jan 16 19:46 ../
