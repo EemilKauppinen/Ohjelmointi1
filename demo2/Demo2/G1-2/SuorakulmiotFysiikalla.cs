@@ -44,7 +44,7 @@ public class G1_2 : PhysicsGame
             PiirraSuorakulmio(x, y, leveys, korkeus);
         }
         Level.CreateBorders();
-        Gravity = new Vector(0, -30);
+        Gravity = new Vector(0, -200);
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
 
