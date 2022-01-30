@@ -54,6 +54,9 @@ public class Program
             isa_janis.tulosta_tiedot();
         }
 
+
+
+        double voittoAika100m = 9.12;
         List<Pupu> vihreat_mutantit = puput.Where(
                         pupu => pupu.get_vari().Equals("vihrea") && pupu.get_rotu().Equals("mutantti")
         ).ToList();
