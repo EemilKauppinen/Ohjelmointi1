@@ -4,7 +4,7 @@
 
 Tekijä: Eemil Kauppinen
 
-Työ git-varaston osoite: <https://github.com/EemilKauppinen/Ohjelmointi1>
+Työ git-varaston osoite: <https://github.com/EemilKauppinen/Ohjelmointi1/tree/main/harjoitustyo>
 
 Pelin nimi: En ole vielä keksinyt
 
