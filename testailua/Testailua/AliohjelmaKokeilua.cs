@@ -71,6 +71,15 @@
             anna_vektori(i, 10);
         }
 
+        double lopputulos = 0.0;
+
+        for (int i=0; i < 1000; i++)
+        {
+            lopputulos += 0.1;
+        }
+
+        
+
     } // Tahan loppuu Main  
 
     
