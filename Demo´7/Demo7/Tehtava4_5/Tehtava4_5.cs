@@ -22,6 +22,24 @@ public class Tehtava4_5 : PhysicsGame
 
         PhysicsObject lahinPallo = LahinPallo(pallot, p.Position);
         lahinPallo.Color = Color.Red;
+
+        Mouse.Listen(
+            MouseButton.Left,
+            ButtonState.Pressed,
+            delegate ()
+            {
+                Vector paikkaKentalla = Mouse.PositionOnWorld;
+                p.Position = paikkaKentalla;
+                foreach (var item in pallot)
+                {
+                    item.Color = Color.White;
+
+                    PhysicsObject lahinPallo = LahinPallo(pallot, p.Position);
+                    lahinPallo.Color = Color.Red;
+                }
+            },
+            ""
+        );
     }
     /// <summary>
     /// Funktio etsii ja palauttaa annettua pistettä lähimmän pallon, siis PhysicsObject-olion.
@@ -72,5 +90,6 @@ public class Tehtava4_5 : PhysicsGame
         }
         return pallot;
     }
+    
 }
 
