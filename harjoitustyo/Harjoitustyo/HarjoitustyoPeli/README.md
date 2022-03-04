@@ -16,7 +16,15 @@ Pelaajien lukumäärä: 1
 
 ## Pelin tämän hetkinen tilanne
 
-Blaah.
+Pallo kulkevat rataa pitkin onnistuneesti, laskurit ovat lisätty. 
+Vihollisia on monenlaisia eri raha ja elämä arvoisia.
+Kun pallo menee vihreälle alueelle se tuhoutuu ja elämä laskurista lähtee piste pois.
+Pallot pysähtvät kun laskuri menee nolliin.
+
+
+## Näppäimet
+
+Hiirtä klikattaessa pallo tuhoutuu ja rahaa tulee lisää vihollisen arvon mukaan.
 
 ## Hahmotelma pelistä
 
@@ -24,4 +32,4 @@ Blaah.
 
 ## Jatkosuunnitelma suunnitelma
 
-
+Tykit pitäisi lisätä, tykkien ja laskurien valikko ylhäällä on kesken. Sekä pallojen jatkuva tasaisesti nouseva generointi.
