@@ -7,14 +7,21 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
+    
+
+public enum KappaleenTila
+{
+    Tyhja,           // 0
+    TormaysPalikka,  // 1
+    AloitusPiste,    // 2
+    LopetusPiste,    // 3
+    Laiton           // 4
+}
 
 public class StaattinenObjecti : GameObject
 {
-    // kun laskuri on 0, kappale ei näy.
-    // kun laskuri on 1, tavallinen kappale näkyy.
-    // kun laskuri on 2, start kappale näkyy.
-    // kun laskuri on 3, end kappale näkyy.
-    int laskuri = 0;
+    KappaleenTila tila = KappaleenTila.Tyhja;
     private bool nakyva = false;
 
     public StaattinenObjecti(Animation animation) : base(animation)
@@ -55,56 +62,66 @@ public class StaattinenObjecti : GameObject
 
     public void muutaNakyvyys()
     {
-        // this.nakyva = !this.nakyva;
-        // this.IsVisible = this.nakyva;
         this.IsVisible = !this.IsVisible;
-        //this.Color = Color.Transparent;
     }
 
-    public void KasvataLaskuria()
+    public void KasvataKappaleenTilaa()
     {
-        laskuri += 1;
-        if (this.laskuri == 4)
+
+        if (tila == KappaleenTila.Tyhja)
         {
-            laskuri = 0;
+            tila = KappaleenTila.TormaysPalikka;
+        }
+        else if (tila == KappaleenTila.TormaysPalikka)
+        {
+            tila = KappaleenTila.AloitusPiste;
+        }
+        else if (tila == KappaleenTila.AloitusPiste)
+        {
+            tila = KappaleenTila.LopetusPiste;
+        }
+        else if (tila == KappaleenTila.LopetusPiste)
+        {
+            tila = KappaleenTila.Tyhja;
         }
 
         MuutaKappaleenTila();
     }
 
-    public int PalautaLaskurinArvo()
+    public KappaleenTila PalautaKappaleenTila()
     {
-        return laskuri;
+        return this.tila;
     }
 
     public void MuutaKappaleenTila()
     {
-        if (laskuri == 0)
+        if (tila == KappaleenTila.Tyhja)
         {
             this.IsVisible = false;
         }
-        if (laskuri == 1)
+        if (tila == KappaleenTila.TormaysPalikka)
         {
             this.IsVisible = true;
+            this.Color = Color.Black;
         }
-        if (laskuri == 2)
+        if (tila == KappaleenTila.AloitusPiste)
         {
             this.IsVisible = true;
             this.Color = Color.Red;
         }
-        if (laskuri == 3)
+        if (tila == KappaleenTila.LopetusPiste)
         {
             this.IsVisible = true;
             this.Color = Color.Green;
         }
     }
-    public void AsetaLaskurinArvo(int laskurinArvo)
+    public void AsetaLaskurinArvo(KappaleenTila tila)
     {
-        if (laskurinArvo > 4 || laskurinArvo < 0)
+        if ((int)KappaleenTila.Laiton <= (int)tila || (int)tila < 0)
         {
             throw new ArgumentException("Laskurin arvo oli ihan puuta-heinää");
         }
-        laskuri = laskurinArvo;
+        this.tila = tila;
         MuutaKappaleenTila();
             
     }
@@ -112,16 +129,23 @@ public class StaattinenObjecti : GameObject
 
 public class HarjoitustyoEditori : PhysicsGame
 {
+    Dictionary<KappaleenTila, char> TilaToChar = new Dictionary<KappaleenTila,char>();
+
     static int ruudukonKokoX = 128;
     static int ruudukonKokoY = 64;
     static int kentanLeveys = 1000;
     static int kentanKorkeus = 500;
+
     private bool ladattu = false;
     private Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt");
 
     List<StaattinenObjecti> kentanTekoLista = new List<StaattinenObjecti>(); // ruudukonKokoX * ruudukonKokoY);
     public override void Begin()
     {
+        TilaToChar.Add(KappaleenTila.Tyhja, 'I');
+        TilaToChar.Add(KappaleenTila.TormaysPalikka, 'V');
+        TilaToChar.Add(KappaleenTila.AloitusPiste, 'S');
+        TilaToChar.Add(KappaleenTila.LopetusPiste, 'E');
         //new PhysicsObject(Animation animation)
         AsetaOhjaimet();
 
@@ -145,25 +169,17 @@ public class HarjoitustyoEditori : PhysicsGame
         double xKoordinaatti = 0.5 * r + (double)x * r - kentanLeveys;
         double yKoordinaatti = 0.5 * r + (double)y * r - kentanKorkeus;
         StaattinenObjecti kappale = new StaattinenObjecti(r, r, Shape.Rectangle);
-        // StaattinenObjecti kappale = new StaattinenObjecti(r, r, Shape.Circle);
         kappale.X = xKoordinaatti;
         kappale.Y = yKoordinaatti;
         kappale.Color = c;
-        // kappale.
-        // kappale.MakeStatic();
         Mouse.ListenOn(kappale, MouseButton.Left, ButtonState.Pressed, AktivoiStaattinenPallo, null, kappale);
-        //Vector impulssi = new Vector(RandomGen.NextDouble(-20, 20), RandomGen.NextDouble(-20, 20));
-        //Vector impulssi = new Vector(20, 500);
-        //kappale.Hit(impulssi * kappale.Mass);
-        // AddCollisionHandler(kappale,KasittelePallonTormays);
         this.Add(kappale);
         kentanTekoLista.Add(kappale);
     }
 
     void AktivoiStaattinenPallo(StaattinenObjecti objekti)
-    {
-        //objekti.muutaNakyvyys();
-        objekti.KasvataLaskuria();
+    {     
+        objekti.KasvataKappaleenTilaa();
     }
     private void LuoTestiKentta()
     {
@@ -186,56 +202,6 @@ public class HarjoitustyoEditori : PhysicsGame
     /// <param name="y">Kappaleen keskipisteen y-koordinaatti</param>
     /// <param name="w">Kappaleen leveys.</param>
     /// <param name="h">Kappaleen korkeus.</param>
-    public void LuoPallo(double x, double y, double w, double h, Color c)
-    {
-        PhysicsObject kappale = new PhysicsObject(w, h, Shape.Circle);
-        kappale.Position = new Vector(x, y);
-        kappale.Color = c;
-        kappale.MakeStatic();
-        //Vector impulssi = new Vector(RandomGen.NextDouble(-20, 20), RandomGen.NextDouble(-20, 20));
-        //Vector impulssi = new Vector(20, 500);
-        //kappale.Hit(impulssi * kappale.Mass);
-        // AddCollisionHandler(kappale,KasittelePallonTormays);
-        this.Add(kappale);
-    }
-
-    public void LuoKolmio(double x, double y, double w, double h, Color c)
-    {
-        PhysicsObject kappale = new PhysicsObject(w, h, Shape.Rectangle);
-        kappale.Position = new Vector(x, y);
-        kappale.Color = c;
-        kappale.MakeStatic();
-        //Vector impulssi = new Vector(RandomGen.NextDouble(-20, 20), RandomGen.NextDouble(-20, 20));
-        //Vector impulssi = new Vector(20, 500);
-        //kappale.Hit(impulssi * kappale.Mass);
-        // AddCollisionHandler(kappale,KasittelePallonTormays);
-        this.Add(kappale);
-    }
-
-    public void LuoLiikkuvaPallo(double x, double y, double w, double h, Color c)
-    {
-        PhysicsObject kappale = new PhysicsObject(w, h, Shape.Circle);
-        kappale.Position = new Vector(x, y);
-        kappale.Color = c;
-        //kappale.MakeStatic();
-        Vector impulssi = new Vector(RandomGen.NextDouble(-120, 120), RandomGen.NextDouble(-120, 120));
-        //Vector impulssi = new Vector(20, 500);
-        kappale.Hit(impulssi * kappale.Mass);
-        // AddCollisionHandler(kappale,KasittelePallonTormays);
-        this.Add(kappale);
-    }
-
-    public void LuoNelikulmio(double x, double y, double w, double h, Color c)
-    {
-        PhysicsObject kappale = new PhysicsObject(w, h, Shape.Rectangle);
-        kappale.Position = new Vector(x, y);
-        kappale.Color = c;
-        kappale.MakeStatic();
-        // Vector impulssi = new Vector(RandomGen.NextDouble(-20, 20), RandomGen.NextDouble(-20, 20));
-        //kappale.Hit(impulssi * kappale.Mass);
-        // AddCollisionHandler(kappale,KasittelePallonTormays);
-        Add(kappale);
-    }
 
     public static int anna_indeksi(int x_koordinaatti, int y_koordinaatti)
     {
@@ -258,64 +224,26 @@ public class HarjoitustyoEditori : PhysicsGame
         // Käy läpi kentantekolistan.
         foreach (var kentanPalanen in kentanTekoLista)
         {
-            if (kentanPalanen.PalautaLaskurinArvo() == 0)
-            {
+            sp.Append(TilaToChar[kentanPalanen.PalautaKappaleenTila()]);
 
-                sp.Append("0");
-            }
-            if (kentanPalanen.PalautaLaskurinArvo() == 1)
-            {   
-
-                sp.Append("1");
-            }
-            if (kentanPalanen.PalautaLaskurinArvo() == 2)
-            {
-                System.Console.WriteLine("tallennetaan 2");
-                sp.Append("2");
-            }
-            if (kentanPalanen.PalautaLaskurinArvo() == 3)
-            {
-                System.Console.WriteLine("tallennetaan 3");
-                sp.Append("3");
-            }
         }
-
-        // Uusi stringbuilder korvaa aina edellisen tiedoston sisällön.
         System.IO.File.WriteAllText(tiedosto, sp.ToString());
 
-        //using (StreamWriter outputFile = new StreamWriter("mapData.txt"))
-        //{
-
-        //outputFile.WriteLine(sp.ToString());
-        //}
-
-        //System.Console.WriteLine("{0}", sp.ToString());
     }
     public void LoadMapData(string kenttaDatanTiedostonNimi)
     {
         if (this.ladattu == false)
         {
-          
-            // 
             string kentanDataMerkkijonona = System.IO.File.ReadAllText(kenttaDatanTiedostonNimi);
-            //System.Console.WriteLine(text);
 
-            //  
-            // "00020100202"
-            // 
             for (int i = 0; i < kentanDataMerkkijonona.Length; i++)
             {
-                try
-                {
+         
+                    // TODO default.
+                    var kappaleenTila = TilaToChar.FirstOrDefault(x => x.Value == kentanDataMerkkijonona[i]).Key;
+                    kentanTekoLista[i].AsetaLaskurinArvo(kappaleenTila);
 
-                    int parsittuLuku = Int32.Parse(kentanDataMerkkijonona[i].ToString());
-                    kentanTekoLista[i].AsetaLaskurinArvo(parsittuLuku);
-                }
-                catch (Exception e)
-                {
-                    System.Console.WriteLine("Virhe LoadMapData aliohjelmassa.");
-                    //continue;
-                }
+                    
 
             }
         }
