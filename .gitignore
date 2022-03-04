@@ -1,3 +1,4 @@
+
 # Notepad temp file 
 *.bak
 
@@ -268,3 +269,5 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+!/harjoitustyo/Harjoitustyo_Tower_Defence/**
