@@ -16,13 +16,17 @@ public enum KappaleenTila
     TormaysPalikka,  // 1
     AloitusPiste,    // 2
     LopetusPiste,    // 3
-    Laiton           // 4
+    Impulssi,        // 4
+    Laiton           // 5
 }
 
 public class StaattinenObjecti : GameObject
 {
-    KappaleenTila tila = KappaleenTila.Tyhja;
+    private KappaleenTila tila = KappaleenTila.Tyhja;
     private bool nakyva = false;
+    private bool onValittu = false;
+    private static Image nuoli = Image.FromFile("arrow.png");
+    private static Image nuoliValittu = Image.FromFile("arrow_green.png");
 
     public StaattinenObjecti(Animation animation) : base(animation)
     {
@@ -78,13 +82,17 @@ public class StaattinenObjecti : GameObject
         }
         else if (tila == KappaleenTila.AloitusPiste)
         {
+            tila = KappaleenTila.Impulssi;
+        }
+        else if (tila == KappaleenTila.Impulssi)
+        {
             tila = KappaleenTila.LopetusPiste;
         }
         else if (tila == KappaleenTila.LopetusPiste)
         {
             tila = KappaleenTila.Tyhja;
         }
-
+        
         MuutaKappaleenTila();
     }
 
@@ -92,27 +100,60 @@ public class StaattinenObjecti : GameObject
     {
         return this.tila;
     }
+    public void OnValittu(bool valittu)
+    {
+        this.onValittu = valittu;
+        if (tila == KappaleenTila.Impulssi)
+        {
+            if (onValittu)
+            {
+                this.Image = nuoliValittu;
+            }
+            else
+            {
+                this.Image = nuoli;
+            }
+            this.IsVisible = true;
 
+        }
+    }
     public void MuutaKappaleenTila()
     {
         if (tila == KappaleenTila.Tyhja)
         {
+            this.Image = null;
             this.IsVisible = false;
         }
         if (tila == KappaleenTila.TormaysPalikka)
         {
+            this.Image = null;
             this.IsVisible = true;
             this.Color = Color.Black;
         }
         if (tila == KappaleenTila.AloitusPiste)
         {
+            this.Image = null;
             this.IsVisible = true;
             this.Color = Color.Red;
         }
         if (tila == KappaleenTila.LopetusPiste)
         {
+            this.Image = null;
             this.IsVisible = true;
             this.Color = Color.Green;
+        }
+        if (tila == KappaleenTila.Impulssi)
+        {
+            if (onValittu)
+            {
+                this.Image = nuoliValittu;
+            }
+            else
+            {
+                this.Image = nuoli;
+            }
+            this.IsVisible = true;
+            
         }
     }
     public void AsetaLaskurinArvo(KappaleenTila tila)
@@ -131,10 +172,10 @@ public class HarjoitustyoEditori : PhysicsGame
 {
     Dictionary<KappaleenTila, char> TilaToChar = new Dictionary<KappaleenTila,char>();
 
-    static int ruudukonKokoX = 128;
-    static int ruudukonKokoY = 64;
-    static int kentanLeveys = 1000;
-    static int kentanKorkeus = 500;
+    private static int ruudukonKokoX = 128;
+    private static int ruudukonKokoY = 64;
+    private static int kentanLeveys = 1000;
+    private static int kentanKorkeus = 500;
 
     private bool ladattu = false;
     private Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt");
@@ -160,7 +201,15 @@ public class HarjoitustyoEditori : PhysicsGame
 
     }
 
+    public void AktivoiImpulssiPalikka(StaattinenObjecti objekti)
+    {
+        foreach(var kentanPalanen in kentanTekoLista)
+        {
+            kentanPalanen.OnValittu(false);
 
+        }
+        objekti.OnValittu(true);
+    }
 
     private void LuoStaattinenObjekti(int x, int y, Shape s, Color c)
     {
@@ -173,6 +222,7 @@ public class HarjoitustyoEditori : PhysicsGame
         kappale.Y = yKoordinaatti;
         kappale.Color = c;
         Mouse.ListenOn(kappale, MouseButton.Left, ButtonState.Pressed, AktivoiStaattinenPallo, null, kappale);
+        Mouse.ListenOn(kappale, MouseButton.Right, ButtonState.Pressed, AktivoiImpulssiPalikka, null, kappale);
         this.Add(kappale);
         kentanTekoLista.Add(kappale);
     }

@@ -7,13 +7,31 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+/// @author  Eemil Kauppinen
+/// @version 4.4.2022
+/// 
+/// <summary>
+/// Määrittelee panosten ominaisuudet
+/// </summary>
 public class Panos
 {
-    int damage = 0;
-    int nopeus = 0;
+    private int damage = 0;
+    private int nopeus = 0;
 
-    PhysicsObject fysiikkaAmmus;
-
+    private PhysicsObject fysiikkaAmmus;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="s"></param>
+    /// <param name="c"></param>
+    /// <param name="damage"></param>
+    /// <param name="nopeus"></param>
+    /// <param name="suunta"></param>
+    /// <param name="elinAika"></param>
     public Panos(double width, double height, double x, double y, Shape s, Color c, int damage, int nopeus, Vector suunta, TimeSpan elinAika)
     {
         PhysicsObject fysiikkaAmmus = new PhysicsObject(width, height, x, y);
@@ -30,29 +48,73 @@ public class Panos
         Panos panos = new Panos(10, 10, x, y, Shape.Circle, Color.Charcoal, 20, 11, suunta, TimeSpan.FromSeconds(5.0));
         return panos;
     }
+    public static Panos LuoKuulaPanos(double x, double y, Vector suunta)
+    {
+        Panos panos = new Panos(3, 3, x, y, Shape.Circle, Color.Black, 2, 9, suunta, TimeSpan.FromSeconds(2.0));
+        return panos;
+    }
+    public static Panos LuoTuliPanos(double x, double y, Vector suunta)
+    {
+        Panos panos = new Panos(3, 3, x, y, Shape.Circle, Color.Red, 3, 4, suunta, TimeSpan.FromSeconds(0.2));
+        return panos;
+    }
+    public static Panos LuoSnipePanos(double x, double y, Vector suunta)
+    {
+        Panos panos = new Panos(10, 10, x, y, Shape.Circle, Color.Charcoal, 35, 30, suunta, TimeSpan.FromSeconds(10.0));
+        return panos;
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public PhysicsObject GetPhysicsObject()
     {
         return this.fysiikkaAmmus;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetDamage()
     {
         return this.damage;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetNopeus()
     {
         return this.nopeus;
     }
 
 }
+/// @author  Eemil Kauppinen
+/// @version 4.4.2022
+/// 
+/// <summary>
+/// Määrittelee tykkien ominaisuudet
+/// </summary>
 public class Tykki
 {
-    int raha_arvo = 10;
-    int elama = 0;
-    int range = 0;
-    Timer ajastin = null;
+    private int raha_arvo = 10;
+    private int elama = 0;
+    private int range = 0;
+    private Timer ajastin = null;
 
-    PhysicsObject fysiikkaObjekti;
-
+    private PhysicsObject fysiikkaObjekti;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="s"></param>
+    /// <param name="c"></param>
+    /// <param name="raha_arvo"></param>
+    /// <param name="elama"></param>
+    /// <param name="range"></param>
     public Tykki(double width, double height, double x, double y, Shape s, Color c, int raha_arvo, int elama, int range)
     {
         PhysicsObject fysiikkaObjekti = new PhysicsObject(width, height, x, y);
@@ -66,15 +128,31 @@ public class Tykki
 
 
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ajastin"></param>
     public void TallennaAjastin(Timer ajastin)
     {
         this.ajastin = ajastin;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetRahaArvo()
     {
 
         return this.raha_arvo;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="peli"></param>
+    /// <param name="onTykkiTyyppi"></param>
+    /// <returns></returns>
     public static Tykki LuoTavallinenTykki(double x, double y, HarjoitustyoPeli peli, bool onTykkiTyyppi)
     {
         Tykki tykki = new Tykki(15, 15, x, y, Shape.Rectangle, Color.Azure, 25, 50, 300);
@@ -93,33 +171,143 @@ public class Tykki
                 Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
                 Vector impulssi = suunta;
 
-                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta);
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, Panos.LuoTavallinenPanos(tykinPositio.X, tykinPositio.Y, impulssi * 11));
             }
             
             
 
         }
         );
+
+        
         
         return tykki;
     }
- 
+    public static Tykki LuoArnold(double x, double y, HarjoitustyoPeli peli, bool onTykkiTyyppi)
+    {
+        Tykki tykki = new Tykki(30, 30, x, y, Shape.Rectangle, Color.Black, 100, 50, 150);
+        if (onTykkiTyyppi)
+        {
+            return tykki;
+        }
+        Timer ajastin = Timer.CreateAndStart(0.5, () =>
+        {
+            Vector tykinPositio = tykki.GetPhysicsObject().Position;
+            Vector vihollisenSijainti = peli.EtsiLahinVihollinen(tykinPositio);
+            double tykinJaVihollisenVälinenSijainti = Vector.Distance(vihollisenSijainti, tykinPositio);
+            if (tykinJaVihollisenVälinenSijainti <= tykki.range)
+            {
+                // Lasketaan tykin panoksen suunta.
+                Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
+                Vector impulssi = suunta;
+
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, Panos.LuoKuulaPanos(tykinPositio.X, tykinPositio.Y, impulssi * 9));
+            }
+
+
+
+        }
+        );
+
+        return tykki;
+    }
+    public static Tykki LuoLiekinHeitin(double x, double y, HarjoitustyoPeli peli, bool onTykkiTyyppi)
+    {
+        Tykki tykki = new Tykki(15, 15, x, y, Shape.Rectangle, Color.Red, 150, 50, 100);
+        if (onTykkiTyyppi)
+        {
+            return tykki;
+        }
+        Timer ajastin = Timer.CreateAndStart(0.2, () =>
+        {
+            Vector tykinPositio = tykki.GetPhysicsObject().Position;
+            Vector vihollisenSijainti = peli.EtsiLahinVihollinen(tykinPositio);
+            double tykinJaVihollisenVälinenSijainti = Vector.Distance(vihollisenSijainti, tykinPositio);
+            if (tykinJaVihollisenVälinenSijainti <= tykki.range)
+            {
+                // Lasketaan tykin panoksen suunta.
+                Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
+                Vector impulssi = suunta;
+
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, Panos.LuoTuliPanos(tykinPositio.X, tykinPositio.Y, impulssi * 0.5));
+            }
+
+
+
+        }
+        );
+
+        return tykki;
+    }
+    public static Tykki LuoSniperTykki(double x, double y, HarjoitustyoPeli peli, bool onTykkiTyyppi)
+    {
+        Tykki tykki = new Tykki(15, 15, x, y, Shape.Rectangle, Color.Green, 75, 50, 750);
+        if (onTykkiTyyppi)
+        {
+            return tykki;
+        }
+        Timer ajastin = Timer.CreateAndStart(8, () =>
+        {
+            Vector tykinPositio = tykki.GetPhysicsObject().Position;
+            Vector vihollisenSijainti = peli.EtsiLahinVihollinen(tykinPositio);
+            double tykinJaVihollisenVälinenSijainti = Vector.Distance(vihollisenSijainti, tykinPositio);
+            if (tykinJaVihollisenVälinenSijainti <= tykki.range)
+            {
+                // Lasketaan tykin panoksen suunta.
+                Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
+                Vector impulssi = suunta;
+
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, Panos.LuoSnipePanos(tykinPositio.X, tykinPositio.Y, impulssi * 30));
+            }
+
+
+
+        }
+        );
+
+        return tykki;
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public PhysicsObject GetPhysicsObject()
     {
         return this.fysiikkaObjekti;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetRange()
     {
         return this.range;
     }
 
 }
+/// @author  Eemil Kauppinen
+/// @version 4.4.2022
+/// 
+/// <summary>
+/// Määrittelee vihollisen ominaisuudet
+/// </summary>
 public class Vihollinen
 {
-    int raha_arvo = 10;
-    int elama = 0;
+    private int raha_arvo = 10;
+    private int elama = 0;
 
-    PhysicsObject tormausKappale;
+    private PhysicsObject tormausKappale;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="s"></param>
+    /// <param name="c"></param>
+    /// <param name="raha_arvo"></param>
+    /// <param name="elama"></param>
     public Vihollinen(double width, double height, double x, double y, Shape s, Color c, int raha_arvo, int elama)
     {
         PhysicsObject tormausKappale = new PhysicsObject(width, height, x, y);
@@ -127,28 +315,45 @@ public class Vihollinen
         tormausKappale.Shape = s;
         this.raha_arvo = raha_arvo;
         this.elama = elama;
-        this.tormausKappale = tormausKappale;
-
-        
-      
+        this.tormausKappale = tormausKappale;   
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public PhysicsObject GetTormausKappale()
     {
         return this.tormausKappale;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetElama()
     {
         return this.elama;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="elama"></param>
     public void SetElama(int elama)
     {
         this.elama = elama;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public int GetRaha_Arvo()
     {
         return this.raha_arvo;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="vahinko"></param>
+    /// <returns></returns>
     public int TeeVahinko(int vahinko)
     {
         
@@ -172,31 +377,49 @@ public class Vihollinen
         return TankkiVihollinen;
     }
 }
+/// @author  Eemil Kauppinen
+/// @version 4.4.2022
+/// 
+/// <summary>
+/// Määrittelee kentän reunan ominaisuudet
+/// </summary>
 public class StaattinenKenttaObjekti // : PhysicsObject
 {
-    PhysicsObject kenttaObjekti;
-    KappaleenTila tila = KappaleenTila.Tyhja;
+    private PhysicsObject kenttaObjekti;
+    private KappaleenTila tila = KappaleenTila.Tyhja;
 
-
-    public StaattinenKenttaObjekti(double width, double height, double x, double y, Shape s) // : base(width, height, x, y)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="width">Leveys</param>
+    /// <param name="height">Korkeus</param>
+    /// <param name="x">x-koordinaatti</param>
+    /// <param name="y">y-koordinaatti</param>
+    /// <param name="s">Muoto</param>
+    public StaattinenKenttaObjekti(double width, double height, double x, double y, Shape s) 
     {
         PhysicsObject jsfkka = new PhysicsObject(width, height, x , y);
         this.kenttaObjekti = jsfkka;
-        // kenttaObjekti.Shape = Shape.Circle;
-        // kenttaObjekti.IsVisible = false;
         kenttaObjekti.Color = Color.Black;
         jsfkka.MakeStatic();
         jsfkka.Shape = s;
         AsetaLaskurinArvo(this.tila);
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public PhysicsObject GetPhysicsObject()
     {
         return this.kenttaObjekti;
     }
     
 
- 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="tila"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void AsetaLaskurinArvo(KappaleenTila tila)
     {
         if ((int)KappaleenTila.Laiton <= (int)tila || (int)tila < 0)
@@ -207,6 +430,9 @@ public class StaattinenKenttaObjekti // : PhysicsObject
         MuutaKappaleenTila();
 
     }
+    /// <summary>
+    /// 
+    /// </summary>
     public void MuutaKappaleenTila()
     {
         if (tila == KappaleenTila.Tyhja)
@@ -228,63 +454,89 @@ public class StaattinenKenttaObjekti // : PhysicsObject
             this.kenttaObjekti.Color = Color.Green;
         }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public Vector GetPosition()
     {
         return kenttaObjekti.Position;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public KappaleenTila PalautaKappaleenTila()
     {
         return this.tila;
     }
 }
-
+/// @author  Eemil Kauppinen
+/// @version 4.4.2022
+/// 
+/// <summary>
+/// Varsinainen peli
+/// </summary>
 public class HarjoitustyoPeli : PhysicsGame
 {
     Dictionary<KappaleenTila, char> TilaToChar = new Dictionary<KappaleenTila, char>();
-    static int ruudukonKokoX = 128;
-    static int ruudukonKokoY = 64;
-    static int kentanLeveys = 1000;
-    static int kentanKorkeus = 500;
+    private static int ruudukonKokoX = 128;
+    private static int ruudukonKokoY = 64;
+    private static int kentanLeveys = 1000;
+    private static int kentanKorkeus = 500;
 
-    IntMeter pisteLaskuri;
-    IntMeter rahaLaskuri;
+    private IntMeter pisteLaskuri;
+    private IntMeter rahaLaskuri;
 
     /// <summary>
     /// tykkiTyyppi on valittu tykki tyyppi, jonka voi sijoittaa kenttään.
     /// </summary>
-    Tykki tykkiTyyppi = null;
+    private Tykki tykkiTyyppi = null;
 
-    List<StaattinenKenttaObjekti> kentanTekoLista = new List<StaattinenKenttaObjekti>();
+    /// <summary>
+    /// Tykki numerolla ilmaistaan mikä tykki halutaan laittaa. 1 perustykki, 2 minigun, 3 liekinheitin, 4 sniper.
+    /// </summary>
+    private int tykkiNumero = 0;
 
-    List<StaattinenKenttaObjekti> aloitusPisteet = new List<StaattinenKenttaObjekti>();
-
-    List<Vihollinen> viholliset = new List<Vihollinen>();
-
-    List<Tykki> tykit = new List<Tykki>();
-
-    List<Panos> panokset = new List<Panos>();
+    /// <summary>
+    /// Lista kentällä olevista staattisista kappaleista.
+    /// </summary>
+    private List<StaattinenKenttaObjekti> kentanTekoLista = new List<StaattinenKenttaObjekti>();
+    /// <summary>
+    /// Lista kentällä olevista aloituspisteistä.
+    /// </summary>
+    private List<StaattinenKenttaObjekti> aloitusPisteet = new List<StaattinenKenttaObjekti>();
+    /// <summary>
+    /// Lista tällähetkellä kentällä olevista vihollisista.
+    /// </summary>
+    private List<Vihollinen> viholliset = new List<Vihollinen>();
+    /// <summary>
+    /// Lista tällähetkellä kentällä olevista tykeistä.
+    /// </summary>
+    private List<Tykki> tykit = new List<Tykki>();
+    /// <summary>
+    /// Lista tällähetkellä kentällä olevista panoksista.
+    /// </summary>
+    private List<Panos> panokset = new List<Panos>();
 
     public override void Begin()
     {
         this.tykkiTyyppi = Tykki.LuoTavallinenTykki(0, 0, this, true);
+        this.tykkiNumero = 1;
 
         LuoYlaPalkki();
+        AsetaOhjaimet();
 
-        
-        
         TilaToChar.Add(KappaleenTila.Tyhja, 'I');
         TilaToChar.Add(KappaleenTila.TormaysPalikka, 'V');
         TilaToChar.Add(KappaleenTila.AloitusPiste, 'S');
         TilaToChar.Add(KappaleenTila.LopetusPiste, 'E');
         Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt");
 
-        LuoAikaValeinPalloja();
-
         GameObject kenttanLapinakuvatonTausta = new GameObject(kentanLeveys * 2, kentanKorkeus * 2, Shape.Rectangle,0,0);
         kenttanLapinakuvatonTausta.IsVisible = false;
         this.Add(kenttanLapinakuvatonTausta);
 
-        
 
         Mouse.ListenOn(kenttanLapinakuvatonTausta, MouseButton.Left, ButtonState.Pressed, fykisksi_obojekti => 
         {
@@ -342,12 +594,8 @@ public class HarjoitustyoPeli : PhysicsGame
         Level.Background.Image = Image.FromFile(ekaKentta.AnnaTaustaKuvanNimi());
         
         SetWindowSize(kentanLeveys, kentanKorkeus);
-
         KeraaAloitusPisteet();
-
-        PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
-        Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
-
+        LuoPeli();
     }
 
     /// <summary>
@@ -376,22 +624,24 @@ public class HarjoitustyoPeli : PhysicsGame
 
         return sijainti;
     }
-    public void LuoPanos(Vector panoksenSijainti, Vector suunta)
+    /// <summary>
+    /// Luo panoksen kentälle, joka lähtee tykistä.
+    /// </summary>
+    /// <param name="panoksenSijainti"></param>
+    /// <param name="suunta"></param>
+    /// <param name="panos">Tykin panos</param>
+    public void LuoPanos(Vector panoksenSijainti, Vector suunta, Panos panos)
     {
-        Panos panos = Panos.LuoTavallinenPanos(panoksenSijainti.X,panoksenSijainti.Y, suunta);
+        
         Add(panos.GetPhysicsObject());
         AddCollisionHandler(panos.GetPhysicsObject(), KasitteleAmmuksenTormays);
         panos.GetPhysicsObject().CollisionIgnoreGroup = 1;
         panokset.Add(panos);
-        
 
-        //Panos panos = Panos.LuoTavallinenPanos(panoksenSijainti.X, panoksenSijainti.Y, impulssi);
-        //this.Add(panos.GetPhysicsObject());
-        //panokset.Add(panos);
-
-        // AddCollisionHandler(panos.GetPhysicsObject(), KasitteleAmmuksenTormays);
-        // this.Add(panos.GetPhysicsObject());
     }
+    /// <summary>
+    /// Käy kentänteko listan läpi ja lisää aloituspisteet omaan listaansa.
+    /// </summary>
     public void KeraaAloitusPisteet()
     {
         for (int i = 0; i < kentanTekoLista.Count; i++)
@@ -404,22 +654,53 @@ public class HarjoitustyoPeli : PhysicsGame
             }
         }
     }
-    public void LuoTykki(Vector vektori)
+    /// <summary>
+    /// Luo kenttään ja tykkilistaan uuden tykin riippuen tykkin numerosta.
+    /// </summary>
+    /// <param name="tykinsijainti">tykinsijainti</param>
+    public void LuoTykki(Vector tykinsijainti)
     {
-        
-        
-        Tykki tykki = Tykki.LuoTavallinenTykki(vektori.X, vektori.Y, this, false);
+        Tykki tykki = null;
+        if (tykkiNumero == 1)
+        {
+            tykki = Tykki.LuoTavallinenTykki(tykinsijainti.X, tykinsijainti.Y, this, false);
+
+        }
+        else if (tykkiNumero == 2)
+        {
+            tykki = Tykki.LuoArnold(tykinsijainti.X, tykinsijainti.Y, this, false);
+
+        }
+        else if (tykkiNumero == 3)
+        {
+            tykki = Tykki.LuoLiekinHeitin(tykinsijainti.X, tykinsijainti.Y, this, false);
+
+        }
+        else if (tykkiNumero == 4)
+        {
+            tykki = Tykki.LuoSniperTykki(tykinsijainti.X, tykinsijainti.Y, this, false);
+
+        }
+
+        // TODO: heitä poikkeus tmv.
+        if (tykki == null) return;
+
         this.Add(tykki.GetPhysicsObject());
         tykki.GetPhysicsObject().CollisionIgnoreGroup = 1;
         tykit.Add(tykki);
         
         
     }
-    public void LuoAikaValeinPalloja()
+    /// <summary>
+    /// Luo ajastimen, joka generoi vihollisen kahden sekunnin välein. TODO: tuo aika parametrina.
+    /// </summary>
+    public void LuoVihollisenGenerointiAjastin()
     {
         Timer ajastin = Timer.CreateAndStart(2, SpawnaaVihollinen);
     }
-
+    /// <summary>
+    /// Luo aloitus pisteestä vihollisia.
+    /// </summary>
     public void SpawnaaVihollinen()
     {
        for (int i = 0;i < aloitusPisteet.Count; i++)
@@ -431,6 +712,10 @@ public class HarjoitustyoPeli : PhysicsGame
             LuoVihollinen(vihollisenX, vihollisenY);
         }
     }
+    /// <summary>
+    /// Tuhoaa vihollisen pelistä sekä viholliset listasta.
+    /// </summary>
+    /// <param name="vihollinen">vihollinen</param>
     public void TuhoaVihollinen(Vihollinen vihollinen)
     {
         vihollinen.GetTormausKappale().Destroy();
@@ -438,6 +723,10 @@ public class HarjoitustyoPeli : PhysicsGame
         viholliset.Remove(vihollinen);
 
     }
+    /// <summary>
+    /// Tuhoaa panoksen pelistä sekä panos listasta.
+    /// </summary>
+    /// <param name="panos">Tykin panos</param>
     public void TuhoaPanos(Panos panos)
     {
         panos.GetPhysicsObject().Destroy();
@@ -447,6 +736,7 @@ public class HarjoitustyoPeli : PhysicsGame
 
     /// <summary>
     /// Luo vihollis objekti haluttuun koortinaattiin kentälle.
+    /// Siinä on hieman satunnaisuutta kun se arpoo vihollisia.
     /// </summary>
     /// <param name="x">x-koordinaatti</param>
     /// <param name="y">y-koordinaatti</param>
@@ -482,7 +772,13 @@ public class HarjoitustyoPeli : PhysicsGame
         AddCollisionHandler(kappale, KasitteleVihollisenTormaus);
         this.Add(kappale);
     }
-    public void KasitteleVihollisenTormaus(PhysicsObject kappale, PhysicsObject kohde)
+    /// <summary>
+    /// Tapahtuman käsittelijä vihollisen ja jonkun muun asian välillä.
+    /// Jos vihollinen törmää lopetus pisteeseen se tuhoituu ja elämää häviää.
+    /// </summary>
+    /// <param name="vihollinen">Kentän vihollinen</param>
+    /// <param name="kohde">Kappale johon törmättiin</param>
+    public void KasitteleVihollisenTormaus(PhysicsObject vihollinen, PhysicsObject kohde)
     {
         foreach(var kentanPalanen in kentanTekoLista)
         {
@@ -490,13 +786,20 @@ public class HarjoitustyoPeli : PhysicsGame
             {
                 if (kentanPalanen.PalautaKappaleenTila()  == KappaleenTila.LopetusPiste)
                 {
-                    kappale.Destroy();
+                    vihollinen.Destroy();
                     pisteLaskuri.AddValue(-1);
                     break;
                 }
             }
         }
     }
+    /// <summary>
+    /// Käsittelee panoksen törmäyksen.
+    /// Jos panos törmää viholliseen, se tuhoutuu ja vihollinen menettää elämää.
+    /// Vihollinen tuhotaan jos elämät ovat alle nollan.
+    /// </summary>
+    /// <param name="ammus">Tykin panos</param>
+    /// <param name="kohde">Kappale johon törmättiin</param>
     public void KasitteleAmmuksenTormays(PhysicsObject ammus, PhysicsObject kohde)
     {
         foreach (var vihollinen in viholliset)
@@ -533,12 +836,45 @@ public class HarjoitustyoPeli : PhysicsGame
             }
         }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    public void ResetoiPeli()
+    {
+        this.ClearTimers();
+        foreach (var vihollinen in viholliset)
+        {
+            vihollinen.GetTormausKappale().Destroy();
+        }
+        viholliset.Clear();
+        foreach(var tykki in tykit)
+        {
+            tykki.GetPhysicsObject().Destroy();
+        }
+        tykit.Clear();
+        foreach(var panos in panokset)
+        {
+            panos.GetPhysicsObject().Destroy();
+        }
+        panokset.Clear();
+        
+    }
+    public void LuoPeli()
+    {
+        ResetoiPeli();
+        this.rahaLaskuri.Value = 50;
+        this.pisteLaskuri.Value = 20;
+        LuoVihollisenGenerointiAjastin();
+    }
+    /// <summary>
+    /// Luo kentän yläosaan valkoisen palkin ja luo pistelaskurit sinne.
+    /// </summary>
     public void LuoYlaPalkki()
     {
         GameObject palkki = new GameObject(kentanLeveys, 125, Shape.Rectangle, 0, 500);
         Add(palkki);
         pisteLaskuri = LuoPisteLaskuri(-200, 300);
-        LuoRahaLaskuri(400, 400, 100);
+        LuoRahaLaskuri(400, 400, 50);
         pisteLaskuri.AddTrigger(0,
                          TriggerDirection.Down,
                          x => {
@@ -549,6 +885,12 @@ public class HarjoitustyoPeli : PhysicsGame
                              }
                          });
     }
+    /// <summary>
+    /// Luo piste laskurin pelaajan rahoille.
+    /// </summary>
+    /// <param name="x">Pistelaskurin x koordinaatti</param>
+    /// <param name="y">Pistelaskurin y koordinaatti</param>
+    /// <param name="raha">joku summa rahaa</param>
     void LuoRahaLaskuri(double x, double y, int raha)
     {
         this.rahaLaskuri = new IntMeter(raha);
@@ -564,6 +906,12 @@ public class HarjoitustyoPeli : PhysicsGame
 
 
     }
+    /// <summary>
+    /// Luo piste laskurin pelaajan elämälle.
+    /// </summary>
+    /// <param name="x">Pistelaskurin x koordinaatti</param>
+    /// <param name="y">Pistelaskurin y koordinaatti</param>
+    /// <returns>Pistelaskuri</returns>
     IntMeter LuoPisteLaskuri(double x, double y)
     {
         IntMeter laskuri = new IntMeter(20);
@@ -581,7 +929,16 @@ public class HarjoitustyoPeli : PhysicsGame
         return laskuri;
     }
 
-
+    /// <summary>
+    /// Luo kentälle seuraavanlaisia objektin: reuna, aloituspiste, loputuspiste, tyhjä
+    /// </summary>
+    /// <param name="width">Leveys</param>
+    /// <param name="height">Korkeus</param>
+    /// <param name="x">x koordinaatti</param>
+    /// <param name="y">y koordinaatti</param>
+    /// <param name="s">Kappaleen muoto</param>
+    /// <param name="c">Kappaleen väri</param>
+    /// <param name="k">Kappaleen tila, eli vaikka aloituspiste</param>
     public void LuoStaattinenKenttaObjekti(double width, double height, double x, double y, Shape s, Color c, KappaleenTila k)
     {
         //GameObject pallo = new GameObject(width, height, x, y);
@@ -593,6 +950,11 @@ public class HarjoitustyoPeli : PhysicsGame
         Add(obj);
 
     }
+    /// <summary>
+    /// Lataa ja muodostaa staattiset kappaleet kenttään.
+    /// Kentän data on tällä yksi merkkijono joka koostuu kirjaimista (I == tyhjä, V == staattinen törmäsykappale, S == aloitus piste, E == lopeus piste). 
+    /// </summary>
+    /// <param name="kentta">kentän data</param>
     public void LoadMapData(string kentta)
     {
         
@@ -608,18 +970,39 @@ public class HarjoitustyoPeli : PhysicsGame
                   continue;
                 }
 
-                Vector pallonSijainti = anna_vektori(i, ruudukonKokoX);
+                Vector pallonSijainti = laskeSijaintiRuudukolla(i, ruudukonKokoX);
 
                 // säde
                 double r = (double)kentanLeveys * 2.0 / (double)ruudukonKokoX;
 
                 LuoStaattinenKenttaObjekti(r, r, pallonSijainti.X, pallonSijainti.Y, Shape.Circle, Color.White, kappaleenTila);
 
-
             }
     }
 
-    public static Vector anna_vektori(int indeksi, int ruudukon_leveys)
+    /// <summary>
+    /// Funktio, joka laskee yksiulotteisen "taulukon" indeksin perusteella paikan kaksi ulotteisessa ruudukossa.
+    /// 
+    /// Esimerkiksi jos ruudukon leveys on 7 niin esimerkiksi
+    /// laskeSijaintiRuudukolla(11, 7) == Vector(4, 1).
+    /// 
+    /// Tätä voi hyödyntää esimerkiksi niin että mäpätään yksiulotteisen taulukon indeksi kaksiulotteisen ruudukon indeksiin.
+    /// 
+    /// +--+--+--+--+--+--+--+
+    /// |14|15|16|17|18|19|20|
+    /// +--+--+--+--+--+--+--+
+    /// | 7| 8| 9|10|11|12|13|
+    /// +--+--+--+--+--+--+--+
+    /// | 0| 1| 2| 3| 4| 5| 6|
+    /// +--+--+--+--+--+--+--+
+    /// 
+    /// |-- ruudukon leveys -|
+    /// 
+    /// </summary>
+    /// <param name="indeksi">Annettu yksiulotteinen indeksi</param>
+    /// <param name="ruudukon_leveys">Kaksiulottisen ruudukon leveys.</param>
+    /// <returns>(x,y) koordinaatti ruudukolla.</returns>
+    public static Vector laskeSijaintiRuudukolla(int indeksi, int ruudukon_leveys)
     {
         int x = indeksi;
         int y = x / ruudukon_leveys;
@@ -627,9 +1010,60 @@ public class HarjoitustyoPeli : PhysicsGame
         double r = (double)kentanLeveys * 2.0 / (double)ruudukonKokoX;
         double xKoordinaatti = 0.5 * r + (double)x * r - kentanLeveys;
         double yKoordinaatti = 0.5 * r + (double)y * r - kentanKorkeus;
-        Vector joo = new Vector(xKoordinaatti, yKoordinaatti);
-        System.Console.WriteLine("(x: {0}, y: {1}", joo.X, joo.Y);
         return new Vector(xKoordinaatti, yKoordinaatti);
+    }
+
+    /// <summary>
+    /// Asettaa peliin liittyvät ohjaimet
+    /// </summary>
+    void AsetaOhjaimet()
+    {
+        Keyboard.Listen(Key.D1,
+                 ButtonState.Down,
+                 delegate () {
+                     
+                     tykkiTyyppi = Tykki.LuoTavallinenTykki(0,0,this,true);
+                     tykkiNumero = 1;
+                 },
+                 "PerusTykki"
+        );
+        Keyboard.Listen(Key.D2,
+            ButtonState.Released,
+            delegate () {
+                tykkiTyyppi = Tykki.LuoArnold(0, 0, this, true);
+                tykkiNumero = 2;
+            },
+         "Minigun"
+        );
+
+        Keyboard.Listen(Key.D3,
+                        ButtonState.Down,
+                        delegate () {
+
+                            tykkiTyyppi = Tykki.LuoLiekinHeitin(0, 0, this, true);
+                            tykkiNumero = 3;
+                        },
+                        "LiekinHeitin"
+        );
+
+        Keyboard.Listen(Key.D4,
+                ButtonState.Down,
+                delegate () {
+
+                    tykkiTyyppi = Tykki.LuoSniperTykki(0, 0, this, true);
+                    tykkiNumero = 4;
+                },
+                "Sniper"
+        );
+     
+        Keyboard.Listen(Key.Ö,
+         ButtonState.Down,
+         LuoPeli,
+         "aloitaPeli"
+        );
+
+        PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
+        Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
     }
 }
 
