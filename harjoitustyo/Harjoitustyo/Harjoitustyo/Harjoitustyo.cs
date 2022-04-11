@@ -19,7 +19,49 @@ public enum KappaleenTila
     Impulssi,        // 4
     Laiton           // 5
 }
+public class General
+{
+    public static Vector anna_vektori(int indeksi, int ruudukon_leveys)
+    {
+        int x = indeksi;
+        int y = x / ruudukon_leveys;
+        x = x - y * ruudukon_leveys;
+        return new Vector(x, y);
+    }
+    public static int anna_indeksi(int x_koordinaatti, int y_koordinaatti, int ruudukonKokoX)
+    {
+        return x_koordinaatti + y_koordinaatti * ruudukonKokoX;
+    }
+    public static void TallennaDoublet(double[] doublet, string tiedostonNimi)
+    {
 
+        using (StreamWriter writer = new StreamWriter(tiedostonNimi))
+        {
+            foreach (double t in doublet)
+            {
+                writer.Write(t);
+                writer.Write('\n');
+            }
+        }
+    }
+    public static List<double> LueDoublet(string tiedostonNimi)
+    {
+        List<double> temp = new List<double>();
+        string kentanDataMerkkijonona = System.IO.File.ReadAllText(tiedostonNimi);
+        string[] pilkottuData = kentanDataMerkkijonona.Split('\n');
+        for (int i = 0; i < pilkottuData.Length; i++)
+        {
+
+            bool onnistui = Double.TryParse(pilkottuData[i], out double t);
+            if (onnistui)
+            {
+                temp.Add(t);
+            }
+
+        }
+        return temp;
+    }
+}
 public class StaattinenObjecti : GameObject
 {
     private KappaleenTila tila = KappaleenTila.Tyhja;
@@ -27,7 +69,7 @@ public class StaattinenObjecti : GameObject
     private bool onValittu = false;
     private static Image nuoli = Image.FromFile("arrow.png");
     private static Image nuoliValittu = Image.FromFile("arrow_green.png");
-
+    private double asteluku = 0;
     public StaattinenObjecti(Animation animation) : base(animation)
     {
         this.nakyva = false;
@@ -50,6 +92,7 @@ public class StaattinenObjecti : GameObject
     {
         this.nakyva = false;
         this.IsVisible = false;
+        this.RotateImage = true;
     }
 
     public StaattinenObjecti(double width, double height, double x, double y) : base(width, height, x, y)
@@ -87,6 +130,8 @@ public class StaattinenObjecti : GameObject
         else if (tila == KappaleenTila.Impulssi)
         {
             tila = KappaleenTila.LopetusPiste;
+            this.asteluku = 0;
+            this.Angle = Angle.FromDegrees(0);
         }
         else if (tila == KappaleenTila.LopetusPiste)
         {
@@ -96,7 +141,7 @@ public class StaattinenObjecti : GameObject
         MuutaKappaleenTila();
     }
 
-    public KappaleenTila PalautaKappaleenTila()
+    public KappaleenTila GetKappaleenTila()
     {
         return this.tila;
     }
@@ -166,7 +211,55 @@ public class StaattinenObjecti : GameObject
         MuutaKappaleenTila();
             
     }
-}
+    public void KasvataSuuntaLaskuria(double aste)
+    {
+        this.asteluku = (this.asteluku + aste) % 360.0;
+        this.Angle = Angle.FromDegrees(this.asteluku);
+        
+    }
+    public void VahennaSuuntaLaskuria(double aste)
+    {
+        this.asteluku = this.asteluku - aste;
+        if (asteluku < 0)
+        {
+            asteluku = 360 + asteluku;
+        }
+        this.Angle = Angle.FromDegrees(this.asteluku);
+        System.Console.WriteLine(asteluku);
+    }
+
+    public void AsetaOhjaimet(HarjoitustyoEditori editori)
+    {
+        
+            editori.Keyboard.Listen(Key.Add,
+                     ButtonState.Down,
+                     delegate () {
+                         if (this.onValittu == true && this.tila == KappaleenTila.Impulssi)
+                         {
+                             KasvataSuuntaLaskuria(5);
+                             //System.Console.WriteLine("käännä");
+                         }
+
+
+                     },
+                     "Käännä"
+            );
+        editori.Keyboard.Listen(Key.Subtract,
+         ButtonState.Down,
+         delegate () {
+             if (this.onValittu == true && this.tila == KappaleenTila.Impulssi)
+             {
+                 VahennaSuuntaLaskuria(5);
+                 //System.Console.WriteLine("käännä");
+             }
+
+
+         },
+         "Käännä"
+);
+
+    }    
+}  
 
 public class HarjoitustyoEditori : PhysicsGame
 {
@@ -178,7 +271,7 @@ public class HarjoitustyoEditori : PhysicsGame
     private static int kentanKorkeus = 500;
 
     private bool ladattu = false;
-    private Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt");
+    private Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt", "test");
 
     List<StaattinenObjecti> kentanTekoLista = new List<StaattinenObjecti>(); // ruudukonKokoX * ruudukonKokoY);
     public override void Begin()
@@ -187,6 +280,7 @@ public class HarjoitustyoEditori : PhysicsGame
         TilaToChar.Add(KappaleenTila.TormaysPalikka, 'V');
         TilaToChar.Add(KappaleenTila.AloitusPiste, 'S');
         TilaToChar.Add(KappaleenTila.LopetusPiste, 'E');
+        TilaToChar.Add(KappaleenTila.Impulssi, 'N');
         //new PhysicsObject(Animation animation)
         AsetaOhjaimet();
 
@@ -213,11 +307,12 @@ public class HarjoitustyoEditori : PhysicsGame
 
     private void LuoStaattinenObjekti(int x, int y, Shape s, Color c)
     {
-        int indeksi = anna_indeksi(x, y);
+        int indeksi = General.anna_indeksi(x, y, ruudukonKokoX);
         double r = (double)kentanLeveys * 2.0 / (double)ruudukonKokoX;
         double xKoordinaatti = 0.5 * r + (double)x * r - kentanLeveys;
         double yKoordinaatti = 0.5 * r + (double)y * r - kentanKorkeus;
         StaattinenObjecti kappale = new StaattinenObjecti(r, r, Shape.Rectangle);
+        kappale.AsetaOhjaimet(this);
         kappale.X = xKoordinaatti;
         kappale.Y = yKoordinaatti;
         kappale.Color = c;
@@ -244,54 +339,46 @@ public class HarjoitustyoEditori : PhysicsGame
 
     }
 
-
-    /// <summary>
-    /// Luodaan räjäytettävä pallo, joka saa satunnaisen vauhdin johonkin suuntaan.
-    /// </summary>
-    /// <param name="x">Kappaleen keskipisteen x-koordinaatti</param>
-    /// <param name="y">Kappaleen keskipisteen y-koordinaatti</param>
-    /// <param name="w">Kappaleen leveys.</param>
-    /// <param name="h">Kappaleen korkeus.</param>
-
-    public static int anna_indeksi(int x_koordinaatti, int y_koordinaatti)
+    public void CreateMapData(string tilaTiedosto, string kulmatTiedosto)
     {
-        return x_koordinaatti + y_koordinaatti * ruudukonKokoX;
-    }
-
-    public static Vector anna_vektori(int indeksi, int ruudukon_leveys)
-    {
-        int x = indeksi;
-        int y = x / ruudukon_leveys;
-        x = x - y * ruudukon_leveys;
-        return new Vector(x, y);
-    }
-
-    public void CreateMapData(string tiedosto)
-    {
+        List<double> temp = new List<double>();
         // Tekee v:tta ja i:ta sen mukaan onko jokin näkyvää vai ei.
         StringBuilder sp = new StringBuilder();
 
         // Käy läpi kentantekolistan.
         foreach (var kentanPalanen in kentanTekoLista)
         {
-            sp.Append(TilaToChar[kentanPalanen.PalautaKappaleenTila()]);
+            sp.Append(TilaToChar[kentanPalanen.GetKappaleenTila()]);
+            if (KappaleenTila.Impulssi == kentanPalanen.GetKappaleenTila()) 
+            {
+                temp.Add(kentanPalanen.Angle.Degrees);
+            }
 
         }
-        System.IO.File.WriteAllText(tiedosto, sp.ToString());
-
+        System.IO.File.WriteAllText(tilaTiedosto, sp.ToString());
+        General.TallennaDoublet(temp.ToArray(), kulmatTiedosto);
     }
-    public void LoadMapData(string kenttaDatanTiedostonNimi)
+    public void LoadMapData(string kenttaDatanTiedostonNimi, string kulmatTiedosto)
     {
         if (this.ladattu == false)
         {
             string kentanDataMerkkijonona = System.IO.File.ReadAllText(kenttaDatanTiedostonNimi);
 
+            int doubleLaskuri = 0;
+
+            List<double> kulmatLista = General.LueDoublet(kulmatTiedosto);
             for (int i = 0; i < kentanDataMerkkijonona.Length; i++)
             {
          
                     // TODO default.
-                    var kappaleenTila = TilaToChar.FirstOrDefault(x => x.Value == kentanDataMerkkijonona[i]).Key;
+                    KappaleenTila kappaleenTila = TilaToChar.FirstOrDefault(x => x.Value == kentanDataMerkkijonona[i]).Key;
                     kentanTekoLista[i].AsetaLaskurinArvo(kappaleenTila);
+                    if (KappaleenTila.Impulssi == kappaleenTila)
+                    {
+                      kentanTekoLista[i].Angle = Angle.FromDegrees(kulmatLista[doubleLaskuri]);
+                      doubleLaskuri++;
+
+                    }
 
                     
 
@@ -299,6 +386,7 @@ public class HarjoitustyoEditori : PhysicsGame
         }
 
     }
+
     /// <summary>
     /// Asettaa näppäimet ja niihin liittyvät tapahtumat.
     /// </summary>
@@ -307,7 +395,7 @@ public class HarjoitustyoEditori : PhysicsGame
         Keyboard.Listen(Key.L,
                  ButtonState.Down,
                  delegate () {
-                     LoadMapData(ekaKentta.AnnakenttaDatatiedostonNimi());
+                     LoadMapData(ekaKentta.AnnakenttaDatatiedostonNimi(), "test");
                      this.ladattu = true;
 
 
@@ -321,11 +409,11 @@ public class HarjoitustyoEditori : PhysicsGame
          },
          "Lataa"
         );
-        //Keyboard.Listen(Key.S, ButtonState.Down, AsetaNopeus, "Liikuta palloa ylös", peli_pallo, nopeusYlos);
+
         Keyboard.Listen(Key.S,
                         ButtonState.Down,
                         delegate() {
-                            CreateMapData(ekaKentta.AnnakenttaDatatiedostonNimi());
+                            CreateMapData(ekaKentta.AnnakenttaDatatiedostonNimi(), "test");
 
 
                         },
@@ -341,12 +429,13 @@ public class Kentta
 {
     private string taustaKuvanNimi;
     private string kenttaDatatiedostonNimi;
+    private string kulmaTiedosto;
 
-
-    public Kentta(string taustaKuvanNimi, string kenttaDatatiedostonNimi )
+    public Kentta(string taustaKuvanNimi, string kenttaDatatiedostonNimi, string kulmaTiedosto)
     {
         this.taustaKuvanNimi = taustaKuvanNimi;
         this.kenttaDatatiedostonNimi = kenttaDatatiedostonNimi;
+        this.kulmaTiedosto = kulmaTiedosto;
     }
 
     public string AnnaTaustaKuvanNimi()
@@ -356,6 +445,10 @@ public class Kentta
     public string AnnakenttaDatatiedostonNimi()
     {
         return this.kenttaDatatiedostonNimi;
+    }
+    public string AnnaKulmatDatatiedostonNimi()
+    {
+        return this.kulmaTiedosto;
     }
 }
 

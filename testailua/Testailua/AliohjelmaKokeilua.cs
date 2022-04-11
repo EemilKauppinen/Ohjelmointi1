@@ -49,6 +49,37 @@
         //};
     }
 
+    public static void TallennaDoublet(double[] doublet)
+    {
+        string fileName = "test.txt";
+
+        using (StreamWriter writer = new StreamWriter(fileName))
+        {
+            foreach(double t in doublet)
+            { 
+                writer.Write(t);
+                writer.Write('\n');
+            }            
+        }
+    }
+    public static List<double> LueDoublet(string tiedostonNimi)
+    {
+        List<double> temp = new List<double>();
+        string kentanDataMerkkijonona = System.IO.File.ReadAllText(tiedostonNimi);
+        string[] pilkottuData = kentanDataMerkkijonona.Split('\n');
+        for (int i = 0; i < pilkottuData.Length; i++)
+        {
+            //System.Console.WriteLine(pilkottuData[i]);
+            bool onnistui = Double.TryParse(pilkottuData[i], out double t);
+            if (onnistui)
+            {
+                temp.Add(t);
+            }
+            //System.Console.WriteLine(t);
+        }
+        return temp;
+    }
+
 
 
     /// <summary>
@@ -58,25 +89,30 @@
     { // Main alkaa.
         //int jebulis = LaskeYhteen(13, 324);
         //int jebulis5 = vahenna(13, 77);
-
+        double[] doublet = { 33, 89, 0.8, 74784.999, 657, 098, 0.00008 };
         //System.Console.WriteLine("int jebulis5 = {0}", jebulis5);
         //System.Console.WriteLine("int jebulis = {0}", jebulis);
-
-        int a = 0;
-        a += 155;
-        a += 100;
-        anna_indeksi(5, 8, 200);
-        for (int i = 0; i < 100; i++)
+        AliohjelmaKokeilua.TallennaDoublet(doublet);
+        List<double> jihuu = LueDoublet("test.txt");
+        foreach (double t in jihuu)
         {
-            anna_vektori(i, 10);
+            System.Console.WriteLine(t);
         }
+        //int a = 0;
+        //a += 155;
+        //a += 100;
+        //anna_indeksi(5, 8, 200);
+        //for (int i = 0; i < 100; i++)
+        //{
+        //    anna_vektori(i, 10);
+        //}
 
-        double lopputulos = 0.0;
+        //double lopputulos = 0.0;
 
-        for (int i=0; i < 1000; i++)
-        {
-            lopputulos += 0.1;
-        }
+        //for (int i=0; i < 1000; i++)
+        //{
+        //    lopputulos += 0.1;
+        //}
 
         
 
