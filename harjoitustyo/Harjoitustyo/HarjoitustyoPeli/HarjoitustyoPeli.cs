@@ -7,34 +7,44 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+
+
 /// @author  Eemil Kauppinen
 /// @version 4.4.2022
 /// 
 /// <summary>
 /// Määrittelee panosten ominaisuudet
 /// </summary>
-
-
 public class Panos
 {
+    /// <summary>
+    /// Panoksen tuottama vahinko
+    /// </summary>
     private int damage = 0;
+
+    /// <summary>
+    /// Panoksen lento nopeus
+    /// </summary>
     private int nopeus = 0;
 
-
-    private PhysicsObject fysiikkaAmmus;
     /// <summary>
-    /// 
+    /// Panoksen fysiikka objekti
     /// </summary>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="s"></param>
-    /// <param name="c"></param>
-    /// <param name="damage"></param>
-    /// <param name="nopeus"></param>
-    /// <param name="suunta"></param>
-    /// <param name="elinAika"></param>
+    private PhysicsObject fysiikkaAmmus;
+
+    /// <summary>
+    /// Rakentaja panokselle.
+    /// </summary>
+    /// <param name="width">Panoksen leveys</param>
+    /// <param name="height">Panoksen korkeus</param>
+    /// <param name="x">Panoksen x-koordinaatti</param>
+    /// <param name="y">Panoksen y-koordinaatti</param>
+    /// <param name="s">Panoksen muoto</param>
+    /// <param name="c">Panoksen väri</param>
+    /// <param name="damage">Panoksen vahinko</param>
+    /// <param name="nopeus">Panoksen nopeus</param>
+    /// <param name="suunta">Panoksen suunta</param>
+    /// <param name="elinAika">Panoksen elinaika</param>
     public Panos(double width, double height, double x, double y, Shape s, Color c, int damage, int nopeus, Vector suunta, TimeSpan elinAika)
     {
         PhysicsObject fysiikkaAmmus = new PhysicsObject(width, height, x, y);
@@ -98,6 +108,16 @@ public class Tykki
     /// </summary>
     private Timer ajastin = null;
 
+    /// <summary>
+    /// Tavallisen tykin kuva.
+    /// </summary>
+    private static Image tykkiKuva = Image.FromFile("сannon1.png");
+
+    /// <summary>
+    /// Arnold tykki kuva.
+    /// </summary>
+    private static Image arnoldKuva = Image.FromFile("minigun2.png");
+
     private PhysicsObject fysiikkaObjekti;
     /// <summary>
     /// Rakentaja tykille.
@@ -121,8 +141,6 @@ public class Tykki
         this.elama = elama;
         this.range = range;
         this.fysiikkaObjekti = fysiikkaObjekti;
-
-
     }
 
 
@@ -185,7 +203,8 @@ public class Tykki
         {
             return tykki;
         }
-        
+        tykki.GetPhysicsObject().Image = Tykki.tykkiKuva;
+
         Timer ajastin = Timer.CreateAndStart(3, () =>
         {
             Vector tykinPositio = tykki.GetPhysicsObject().Position;
@@ -229,6 +248,9 @@ public class Tykki
         {
             return tykki;
         }
+
+        tykki.GetPhysicsObject().Image = Tykki.arnoldKuva;
+        
         Timer ajastin = Timer.CreateAndStart(0.5, () =>
         {
             Vector tykinPositio = tykki.GetPhysicsObject().Position;
@@ -365,6 +387,11 @@ public class Vihollinen
     /// </summary>
     private int vahinko = 0;
 
+    /// <summary>
+    /// Vihollisen kuva.
+    /// </summary>
+    private static Image zombieKuva = Image.FromFile("ufo.png");
+
     private PhysicsObject tormausKappale;
     /// <summary>
     /// Rakentaja viholliselle.
@@ -382,6 +409,12 @@ public class Vihollinen
         PhysicsObject tormausKappale = new PhysicsObject(width, height, x, y);
         tormausKappale.Color = c;
         tormausKappale.Shape = s;
+        tormausKappale.KineticFriction = 5.5;
+        tormausKappale.Restitution = 0.5;
+        tormausKappale.MaxVelocity = 50.0;
+        // tormausKappale.Velocity = new Vec;
+        tormausKappale.Image = Vihollinen.zombieKuva;
+        tormausKappale.RotateImage = true;
         this.raha_arvo = raha_arvo;
         this.elama = elama;
         this.vahinko = vahinko;
@@ -549,10 +582,26 @@ public class StaattinenKenttaObjekti // : PhysicsObject
 
 public class HarjoitustyoPeli : PhysicsGame
 {
+
+    /// <summary>
+    /// Mistä indeksistä ladataan kenttä kentät listasta.
+    /// </summary>
+    private static int kentanNumero = 0;
+
     /// <summary>
     /// Avaimena on kappaleentila ja sitä vastaava char. TODO: mieti toista ratkaisua.
     /// </summary>
-    Dictionary<KappaleenTila, char> TilaToChar = new Dictionary<KappaleenTila, char>();
+    private Dictionary<KappaleenTila, char> TilaToChar = new Dictionary<KappaleenTila, char>();
+
+    /// <summary>
+    /// Laskuri vihollisten määrälle.
+    /// </summary>
+    private IntMeter vihollisLaskuri = new IntMeter(0, 0, 1000);
+
+    /// <summary>
+    /// Laskuri vihollisten spawnaamiselle.
+    /// </summary>
+    private IntMeter spawnausLaskuri = new IntMeter(1000, 0, 1000);
 
     /// <summary>
     /// Ruutuen määrä leveyssuunnassa
@@ -632,6 +681,8 @@ public class HarjoitustyoPeli : PhysicsGame
     /// <summary>
     /// Alustaa pelin toiminnan.
     /// </summary>
+
+
     public override void Begin()
     {
         this.tykkiTyyppi = Tykki.LuoTavallinenTykki(0, 0, this, true);
@@ -651,7 +702,13 @@ public class HarjoitustyoPeli : PhysicsGame
         TilaToChar.Add(KappaleenTila.Impulssi, 'N');
 
         // Määritellään ekakenttä.
-        Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt", "test");
+        // Kentta ekaKentta = new Kentta("ekaKentta.png", "kentta1.txt", "test");
+        Kentta ekaKentta = new Kentta("ruohoKentta.jpg", "ruohoData.txt", "ruohoKulmat.txt");
+        Kentta toinenKentta = new Kentta("ekaKentta.png", "kentta1.txt", "test");
+
+        // Laitetaan kentät listaan.
+        kentat.Add(ekaKentta);
+        kentat.Add(toinenKentta);
 
         // Luodaan näkymätön tausta koko pelikentälle, joka ottaa hiiren klikkauksia vastaan.
         // Se pitää olla jotta saa tapahtuman käsittelijän toimivaan hiirellä tykkien lisäämistä varten.
@@ -717,23 +774,60 @@ public class HarjoitustyoPeli : PhysicsGame
 
         }, null, kenttanLapinakuvatonTausta);
 
-        // Ladataan ja muodostetaan staattiset kappaleet ja impulssit kenttään.
-        LoadMapData(ekaKentta.AnnakenttaDatatiedostonNimi(), ekaKentta.AnnaKulmatDatatiedostonNimi());
-
-        // Asetetaan tausta kuva.
-        Level.Background.Image = Image.FromFile(ekaKentta.AnnaTaustaKuvanNimi());
-
-        // Laitetaan ekakenttä listaan.
-        kentat.Add(ekaKentta);
+        vaihdaKentta();
 
         // Asetetaan ikkunan koko.
         SetWindowSize(kentanLeveys, kentanKorkeus);
 
         // Käydään kentänteko listan läpi ja lisäätään aloituspisteet omaan listaansa.
-        KeraaAloitusPisteet();
+        // KeraaAloitusPisteet();
 
         // Asetetaan laskurit alkuarvoonsa ja laitetaan vihollisten generointi käyntiin.
         LuoPeli();
+    }
+
+
+    /// <summary>
+    /// Vaihtaa kentän.
+    /// </summary>
+    public void vaihdaKentta()
+    {
+        ResetoiPeli();
+
+        foreach(var x in kentanTekoLista)
+        {
+            x.GetPhysicsObject().Destroy();
+        }
+
+        kentanTekoLista.Clear();
+
+        impulssit.Clear();
+
+        aloitusPisteet.Clear();
+
+        // Alustaa kaikki impulssit nollaksi kentällä.
+        for (int i = 0; i < ruudukonKokoX * ruudukonKokoY; i++)
+        {
+            impulssit.Add(Vector.Zero);
+        }
+
+        int kenttienLukuMaara = kentat.Count;
+
+        kentanNumero = (kentanNumero + 1) % kenttienLukuMaara;
+
+        Kentta kentta = kentat[kentanNumero];
+
+        // Ladataan ja muodostetaan staattiset kappaleet ja impulssit kenttään.
+        LoadMapData(kentta.AnnakenttaDatatiedostonNimi(), kentta.AnnaKulmatDatatiedostonNimi());
+
+        // Asetetaan tausta kuva.
+        Level.Background.Image = Image.FromFile(kentta.AnnaTaustaKuvanNimi());
+
+        // Käydään kentänteko listan läpi ja lisäätään aloituspisteet omaan listaansa.
+        KeraaAloitusPisteet();
+
+        LuoPeli();
+
     }
 
 
@@ -855,12 +949,17 @@ public class HarjoitustyoPeli : PhysicsGame
     {
        for (int i = 0;i < aloitusPisteet.Count; i++)
         {
-
-            Vector temp = aloitusPisteet[i].GetPosition();
-            double vihollisenX = temp.X;
-            double vihollisenY = temp.Y;
-            LuoVihollinen(vihollisenX, vihollisenY);
+            if (spawnausLaskuri.MinValue != spawnausLaskuri.Value)
+            {
+                spawnausLaskuri.AddValue(-1);
+                Vector temp = aloitusPisteet[i].GetPosition();
+                double vihollisenX = temp.X;
+                double vihollisenY = temp.Y;
+                LuoVihollinen(vihollisenX, vihollisenY);
+                vihollisLaskuri.AddValue(1);
+            }
         }
+       
     }
 
 
@@ -873,6 +972,12 @@ public class HarjoitustyoPeli : PhysicsGame
         vihollinen.GetTormausKappale().Destroy();
         rahaLaskuri.AddValue(vihollinen.GetRaha_Arvo());
         viholliset.Remove(vihollinen);
+        vihollisLaskuri.AddValue(-1);
+        if (spawnausLaskuri.MinValue == spawnausLaskuri.Value && vihollisLaskuri.Value == 0)
+        {
+            ResetoiPeli();
+            MessageDisplay.Add("Sinä voitit");
+        }
 
     }
 
@@ -925,15 +1030,15 @@ public class HarjoitustyoPeli : PhysicsGame
                 // System.Console.WriteLine("{0}", temp.ToString());
                 int listanIndeksi = General.anna_indeksi((int)temp.X, (int)temp.Y, ruudukonKokoX);
                 Vector impulssi = impulssit[listanIndeksi];
-                vihollinen.GetTormausKappale().Hit(impulssi * 1.1);
+                vihollinen.GetTormausKappale().Hit(impulssi * 5.0); // 1.1
             }
         }
         );
         
         PhysicsObject kappale = vihollinen.GetTormausKappale();
-        Vector impulssi = new Vector(RandomGen.NextDouble(0, 200), RandomGen.NextDouble(0, 200));
+        Vector impulssi = new Vector(RandomGen.NextDouble(0, 5), RandomGen.NextDouble(0, 5));
         kappale.Hit(impulssi * kappale.Mass);
-        kappale.Restitution = 1.4;
+        //kappale.Restitution = 1.4;
         //Mouse.ListenOn(kappale, MouseButton.Left, ButtonState.Pressed, x => { TuhoaVihollinen(vihollinen); }, null, kappale);
 
         AddCollisionHandler(kappale, KasitteleVihollisenTormaus);
@@ -1080,8 +1185,10 @@ public class HarjoitustyoPeli : PhysicsGame
     public void LuoPeli()
     {
         ResetoiPeli();
-        this.rahaLaskuri.Value = 5000;
+        this.rahaLaskuri.Value = 200;
         this.pisteLaskuri.Value = 20;
+        this.vihollisLaskuri.Value = 0;
+        this.spawnausLaskuri.Value= 50;
         LuoVihollisenGenerointiAjastin();
     }
 
@@ -1095,6 +1202,8 @@ public class HarjoitustyoPeli : PhysicsGame
         Add(palkki);
         pisteLaskuri = LuoPisteLaskuri(-400, 450);
         LuoRahaLaskuri(400, 450, 50);
+        LuoSpawnausLaskuri(200, 450);
+        LuoVihollisLaskuri();
         pisteLaskuri.AddTrigger(0,
                          TriggerDirection.Down,
                          x => {
@@ -1123,6 +1232,37 @@ public class HarjoitustyoPeli : PhysicsGame
         naytto.Color = Level.Background.Color;
         Add(naytto);
 
+
+    }
+
+
+    /// <summary>
+    /// Luo spawnaus laskurin.
+    /// </summary>
+    /// <param name="x">Pistelaskurin x koordinaatti</param>
+    /// <param name="y">Pistelaskurin y koordinaatti</param>
+    void LuoSpawnausLaskuri(double x, double y)
+    {
+        spawnausLaskuri = new IntMeter(10, 0, 1000);
+        Label naytto = new Label();
+        naytto.BindTo(spawnausLaskuri);
+        naytto.X = x;
+        naytto.Y = y;
+        naytto.TextColor = Color.Green;
+        naytto.BorderColor = Level.Background.Color;
+        naytto.Color = Level.Background.Color;
+        Add(naytto);
+
+
+    }
+
+
+    /// <summary>
+    /// Luo vihollisLaskurin vihollisille.
+    /// </summary>
+    void LuoVihollisLaskuri()
+    {
+        vihollisLaskuri = new IntMeter(0, 0, 1000);
 
     }
 
@@ -1300,10 +1440,18 @@ public class HarjoitustyoPeli : PhysicsGame
                 "Sniper"
         );
      
-        Keyboard.Listen(Key.Ö,
+        Keyboard.Listen(Key.U,
          ButtonState.Down,
          LuoPeli,
          "aloitaPeli"
+        );
+
+        ;
+
+        Keyboard.Listen(Key.V,
+         ButtonState.Down,
+         vaihdaKentta,
+         "vaihda kenttä"
         );
 
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
