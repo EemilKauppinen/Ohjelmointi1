@@ -224,9 +224,6 @@ public class Tykki
         );
         tykki.SetAjastin(ajastin);
         
-
-
-
         return tykki;
     }
 
@@ -263,9 +260,6 @@ public class Tykki
                 Vector impulssi = suunta*5;
                 peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, new Panos(6, 3, tykinPositio.X, tykinPositio.Y, Shape.Circle, Color.Black, 2, 9, impulssi, TimeSpan.FromSeconds(2.0)));
             }
-
-
-
         }
         );
         tykki.SetAjastin(ajastin);
@@ -283,29 +277,38 @@ public class Tykki
     /// <returns>tykki</returns>
     public static Tykki LuoLiekinHeitin(double x, double y, HarjoitustyoPeli peli, bool onTykkiTyyppi)
     {
-        Tykki tykki = new Tykki(15, 15, x, y, Shape.Rectangle, Color.Red, 150, 50, 100);
+        Tykki tykki = new Tykki(15, 15, x, y, Shape.Rectangle, Color.Red, 150, 50, 200);
 
         // TODO: toisteista koodia, refakturoi jos on aikaa.
         if (onTykkiTyyppi)
         {
             return tykki;
         }
-        Timer ajastin = Timer.CreateAndStart(0.1, () =>
+        Timer ajastin = Timer.CreateAndStart(0.01, () =>
         {
             Vector tykinPositio = tykki.GetPhysicsObject().Position;
             Vector vihollisenSijainti = peli.EtsiLahinVihollinen(tykinPositio);
             double tykinJaVihollisenVälinenSijainti = Vector.Distance(vihollisenSijainti, tykinPositio);
             if (tykinJaVihollisenVälinenSijainti <= tykki.range)
             {
-                // Lasketaan tykin panoksen suunta.
-                Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
-                Vector impulssi = suunta * 0.5;
+                // Lasketaan tykin panoksen suunta. Satunnaistaa suuntaa.
+
+                double randomX = RandomGen.NextDouble(-30.0, 30.0); // Tykin panoksen suunnassa hajontaa +- 30.0 astetta.
                 
-                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, new Panos(3, 3, tykinPositio.X, tykinPositio.Y, Shape.Circle, Color.Red, 3, 4, impulssi, TimeSpan.FromSeconds(0.2)));
+                Vector suunta = (vihollisenSijainti - tykinPositio);
+                
+
+                Angle kulma = suunta.Angle;
+                double uusiKulma = kulma.Degrees + randomX;
+                suunta = Vector.FromAngle(Angle.FromDegrees(uusiKulma));
+                suunta.Normalize();
+                Vector impulssi = suunta * 0.5;
+
+                // Tulihiukkasen elinaika.
+                double tuliElinaika = RandomGen.NextDouble(0.05, 0.3);
+
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, new Panos(3, 3, tykinPositio.X, tykinPositio.Y, Shape.Circle, Color.Red, 1, 4, impulssi, TimeSpan.FromSeconds(tuliElinaika)));
             }
-
-
-
         }
         );
         tykki.SetAjastin(ajastin);
@@ -341,7 +344,7 @@ public class Tykki
                 Vector suunta = (vihollisenSijainti - tykinPositio) / tykinJaVihollisenVälinenSijainti;
                 Vector impulssi = suunta * 6;
                 
-                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, new Panos(15, 10, tykinPositio.X, tykinPositio.Y, Shape.Circle, Color.Charcoal, 35, 30, impulssi, TimeSpan.FromSeconds(10.0)));
+                peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, new Panos(15, 10, tykinPositio.X, tykinPositio.Y, Shape.Circle, Color.Charcoal, 15, 30, impulssi, TimeSpan.FromSeconds(10.0)));
                 //peli.LuoPanos(tykki.GetPhysicsObject().Position, suunta, Panos.LuoSnipePanos(tykinPositio.X, tykinPositio.Y, impulssi * 6));
             }
 
